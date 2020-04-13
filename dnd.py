@@ -6,7 +6,7 @@ import random
 import csv
 
 
-# creature class, parent class to player classes and monster
+# parent class to player classes and monster class
 class Creature:
     def __init__(self, name):
         self.name = name
@@ -27,14 +27,19 @@ class Creature:
     def setDmgBonus(self, bonus):
         self.dmgBonus = bonus
 
-    def setsaveBonus(self, bonus):
-        self.saveBonus = bonus
-
 
 # Monster class inherits from Creature
 class Monster(Creature):
     def __init__(self, name):
         super().__init__(name)
+
+    # player characters don't need this in this sim, only monsters
+    def setsaveBonus(self, bonus):
+        self.saveBonus = bonus
+
+    # melee or ranged?
+    def setAttackType(self, attack):
+        self.attackType = attack
 
 
 # Player classes inherit from Creature
@@ -50,16 +55,38 @@ class Fighter(Creature):
         self.rangedToHit = 6
         self.rangedDmgDie = 8
         self.rangedDmgBonus = 4
+        self.healingPotions = 2
 
-    def attack(self, attackType):
+    def attack(self, attackType, enemyAc):
+        damageDealt = 0
         if(attackType == "melee"):
-            damageDealt = random.randint(0, self.meleeDmgDie) + self.meleeDmgBonus
+            # fighter get two attacks
+            for i in range(0, 2):
+                # roll a d20 to hit
+                hit = ((random.randint(0, 20) + meleeToHit) >= enemyAc)
+                if(hit):
+                    # roll damage
+                    damageDealt = damageDealt + random.randint(0, self.meleeDmgDie) + self.meleeDmgBonus
             return damageDealt
         elif(attackType == "ranged"):
-            damageDealt = random.randint(0, self.rangedDmgDie) + self.rangedDmgBonus
+            for i in range(0, 2):
+                hit = ((random.randint(0, 20) + meleeToHit) >= enemyAc)
+                if(hit):
+                    damageDealt = damageDealt + random.randint(0, self.rangedDmgDie) + self.rangedDmgBonus
             return damageDealt
         else:
-            return 0
+            # in case something went wrong, return -1
+            return -1
+
+    # quaff a potion of healing
+    def healing(self):
+        # potion of healing is 1d4 + 4
+        self.hp = self.hp + random.randint(0, 4) + 4
+
+    def printOptions(self):
+        return "/attack -attack using longsword (need to be adjacent to enemy) \n    or using longbow \
+(less accurate but you can have distance)\n /dodge -less likely to be hit \
+for a turn\n /heal -quaff a healing potion"
 
 
 class Sorcerer(Creature):
@@ -76,6 +103,18 @@ class Sorcerer(Creature):
         self.maxFear = 1
         self.fireRemaining = self.maxFire
         self.fearRemaining = self.maxFear
+        self.healingPotions = 3
+
+    # quaff a potion of healing
+    def healing(self):
+        self.hp = self.hp + random.randint(0, 4) + 4
+
+    def attack(self, enemyAc):
+        damageDealt = 0
+        hit = ((random.randint(0, 20) + toHit) >= enemyAc)
+        if(hit):
+            # roll damage
+            damageDealt = damageDealt + random.randint(0, self.dmgDie) + self.dmgBonus
 
     # sorcerer has spells available
     def spellcast(self, spell):
@@ -100,9 +139,16 @@ class Sorcerer(Creature):
             else:
                 self.fearRemaining = self.fearRemaining - 1
                 return 1
+    def printOptions(self):
+        return "-Fire Bolt (unlimited uses, ranged spell attack\n -Fireball (much stronger, enemy rolls a saving throw\
+and takes half damage on a save, limited to 3 uses per rest\n -Fear (if enemy fails save, causes them to run away from the encounter\
+, only one use per rest\n -Attack (pitiful for a sorcerer to attempt to attack with a dagger, but I mean \
+you could if you want...\n -Dodge (less likely to be hit \
+for a turn)\n -Heal (quaff a healing potion)"
 
 
 # make a square grid of a given size using a 2D array, filled with 0's
+# used to make the world map and the battle maps
 def gridInit(size):
     col = []
     for i in range(0, size):
@@ -128,7 +174,7 @@ def worldMap():
     m = 0
     for row in obj:
         gr[n][m] = row
-        m = m + 1               # this was difficult to logic out but it works
+        m = m + 1               # this was difficult to logic out but it works!
         if((m + 1) % 7 == 0):   # the grid is 6x6
             m = 0
             n = n + 1
@@ -171,13 +217,24 @@ def worldMove(a, b, boundaryReached):
             return (a, b, boundaryReached)
     return
 
-
-def rollInitiative(mon, player, inMap, monPos1, monPos2, playerPos1, playerPos2):
-    # do the battle, printing to stdout:
-    # make a grid for the battle map
+# Called when the player encounters a monster
+# makes a battle map, prints it to the console
+# gives the player a list of options, movement rules are enforced
+# enemy "ai" is very simple, and ranged attacks are simpllified from the SRD
+def rollInitiative(inMonster, inPlayer, inMap, monPos1, monPos2, playerPos1, playerPos2):
+    # source for the code for printing the map:
+    # https://www.tutorialspoint.com/python_data_structure/python_2darray.htm
+    mp1 = int(monPos1)
+    mp2 = int(monPos2)
+    pp1 = int(playerPos1)
+    pp2 = int(playerPos2)
+    monIc = "&"
+    playerIc = "@"
     battleMap = gridInit(7)
     battleIn = open(inMap, 'r', newline='')
     battle = csv.reader(battleIn)
+    player = inPlayer
+    monster = inMonster
     # fill the map with the background in the given csv file
     q = 0
     r = 0
@@ -187,28 +244,34 @@ def rollInitiative(mon, player, inMap, monPos1, monPos2, playerPos1, playerPos2)
         if((r + 1) % 8 == 0):
             r = 0
             q = q + 1
-    # print the map
-    # source: https://www.tutorialspoint.com/python_data_structure/python_2darray.htm
-    for g in battleMap:
-        for h in g:
-            print(''.join(h), " ", end = "")
-        print()
 
     # battle loop:
-    # player and enemy drawn on map
-    # each have stats managed by their objects
-    # monster behaves very simple: if ranged, move away and attack, 
-    # if melee type, get close and attack
-    # player will be given a list of options as well as an updated battle
-    # map at the start of each turn. 
-    # when player moves, I need a way to save the spot's previous icon, so I can
-    # replace the icon on the drawing of the map
-    # also need to figure out pathing for the enemy "ai"
-    # if player hp goes to 0, game over, return 1. If player succeeds, reward? and 
-    # return 0. Calling function can check the return value and 
-    # give either a game over or continue main loop
-
-    return
+    victor = 0
+    while(victor == 0):
+        # player and enemy drawn on map
+        mapBackup1 = battleMap[mp1][mp2]
+        mapBackup2 = battleMap[pp1][pp2]
+        battleMap[mp1][mp2] = monIc
+        battleMap[pp1][pp2] = playerIc
+        print("---------------------------------------------------------\n")
+        # print the map with creature locations
+        for g in battleMap:
+            for h in g:
+                print(''.join(h), " ", end = "")
+            print()
+        playerMove = 3
+        monsterMove = 3
+        print("\nYou are @. The ", monster.name, "is &. You may move 3 spaces and take an action.\nYour actions are:", '\n', player.printOptions())
+        move = input()
+        # also need to figure out pathing for the enemy "ai"
+        # if player hp goes to 0, game over, return 1. If player succeeds, reward? and 
+        # return 0. Calling function can check the return value and 
+        # give either a game over or continue main loop
+        if(monster.hp == 0):
+            victor = 1
+        elif(player.hp == 0):
+            victor = 2
+    return victor
 
 
 def main():
@@ -234,33 +297,52 @@ def main():
     b = 3
     while (winState != 1):
         # (win state will become 1 in a specific encounter)
+        # set player position values to the new values at beginning of loop
         pos = world[a][b]
         # nothing happens, basic dialog
         if(pos[0] == "dialog"):
             print(pos[1])
+
         # found a healing item!
         if(pos[0] == "healing"):
             print(pos[1])
             player.setHp(player.hp + pos[2])
+
         # weapon upgrade
         if(pos[0] == "weapon"):
             print(pos[1])
             player.setDmgBonus(player.dmgBonus + pos[2])
+
         # armor upgrade
         if(pos[0] == "armor"):
             print(pos[1])
             player.setAc(player.ac + pos[2])
+
         # A monster appears!
-        if(pos[0] == "encounter"):
-            # I will end up handling these arguments by simply passing a monster object
+        #print(pos[0])
+        print(pos[13])
+        if(pos[0] == "encounter" and int(pos[13]) == 0):
             monster = Monster(pos[11])
             # set monster attributes here
-            rollInitiative(monster, player, pos[6], pos[7], pos[8], pos[9], pos[10])
+            monster.setHp(pos[1])
+            monster.setAc(pos[2])
+            monster.setToHit(pos[3])
+            monster.setDmgDie(pos[4])
+            monster.setDmgBonus(pos[5])
+            monster.setsaveBonus(pos[12])
+            monster.setAttackType(pos[15])
+            # return the player object with updated battle damage/ updated rewards
+            print("before: ", player.hp)
+            var = rollInitiative(monster, player, pos[6], pos[7], pos[8], pos[9], pos[10])
+            print("after: ", player.hp)
             # the encounter may give a key item to the player, or the location of the goal (winstate trigger)
             # I should set a trigger to know if this encounter has happened already,
             # in the case the player back tracks
         # if the player is still alive after the encounter, let them move
-        print("-----------------")
+        # setting this to 1 should ensure player doesn't repeat encounters when backtracking
+        pos[13] = 1
+        print(pos[14])
+        print("--------------------------------------------------------")
         print("a: ", a, "b: ", b)
         # pass current location data into worldMove(), then reassign any new values
         # !!!! throws a TypeError exception if an invalid value is input for direction- need to handle !!!!
