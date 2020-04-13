@@ -88,18 +88,18 @@ class Sorcerer(Creature):
             else:
                 self.fireRemaining = self.fireRemaining - 1
                 # fireballs do 8d6
+                # This returns a more random number, as "8 * randomint(0,6)" always returns a multiple of 8"
                 sum = 0
                 for i in range(0, 8):
                     sum = sum + random.randint(0,6)
                 return sum
         if(spell == "fear"):
             if(self.fearRemaining == 0):
-                print("You have run out of Fireballs to use! Take a rest to regain")
+                print("You have run out of Fears to use! Take a rest to regain")
                 return 0
             else:
                 self.fearRemaining = self.fearRemaining - 1
-
-# declare a pc outside of any functions?
+                return 1
 
 
 # make a square grid of a given size using a 2D array, filled with 0's
@@ -121,7 +121,7 @@ def worldMap():
     # read a csv file
     # source: https://www.tutorialspoint.com/reading-and-writing-csv-file-using-python
     file = open('grid.csv', 'r', newline='')
-    obj = csv.reader(file)
+    obj = csv.reader(file, delimiter='|')    # using | as a delimiter so I can write messages with commas
 
     # every element in the gr 2D array should be populated with an array: the rows of obj
     n = 0
@@ -135,24 +135,45 @@ def worldMap():
     return gr
 
 
-# stub
-def worldMove():
+# function to allow the player to move about a 6x6 world map
+# a and b are coordinates: a is the y axis, b is the x.
+# a increases down the grid, b increases to the right. It's funky but it works
+# boundaryReached is used to check if the player is about to go outside the grid
+def worldMove(a, b, boundaryReached):
     dir = input("What direction would you like to move?\noptions are: north, east, south, west (case sensetive): ")
     if(dir == "north"):
-        print("north")
+        if(a == 0):
+            boundaryReached = 0
+            return(a, b, boundaryReached)
+        else:
+            a = a - 1
+            return (a, b, boundaryReached)
     if(dir == "east"):
-        print("east")
+        if(b == 5):
+            boundaryReached = 1
+            return(a, b, boundaryReached)
+        else:
+            b = b + 1
+            return (a, b, boundaryReached)
     if(dir == "south"):
-        print("south")
+        if(a == 5):
+            boundaryReached = 2
+            return(a, b, boundaryReached)
+        else:
+            a = a + 1
+            return (a, b, boundaryReached)
     if(dir == "west"):
-        print("west")
+        if(b == 0):
+            boundaryReached = 3
+            return(a, b, boundaryReached)
+        else:
+            b = b - 1
+            return (a, b, boundaryReached)
     return
 
 
-def rollInitiative(hp, ac, toHit, damageDie, damageBonus,
-                    inMap, pcPos1, pcPos2, monPos1, monPos2, name, save, player):
-    # do the battle, printing to stdout
-    # --------------instantiate a monster object here-----------------
+def rollInitiative(mon, player, inMap, monPos1, monPos2, playerPos1, playerPos2):
+    # do the battle, printing to stdout:
     # make a grid for the battle map
     battleMap = gridInit(7)
     battleIn = open(inMap, 'r', newline='')
@@ -172,29 +193,6 @@ def rollInitiative(hp, ac, toHit, damageDie, damageBonus,
         for h in g:
             print(''.join(h), " ", end = "")
         print()
-    print(player.spellcast("fireball"))
-
-    # # testing
-    # mon = Monster("skeleton")
-    # # print(mon.name)
-    # mon.setHp(20)
-    # print(mon.hp)
-    # mon.setHp(mon.hp - 4)
-    # print(mon.hp)
-
-    # zombie = Monster("zombie")
-    # zombie.setHp(50)
-    # # print(zombie.hp)
-    # # print(mon.hp)
-
-    # sorc = Sorcerer("Phillip")
-    # # print(sorc.hp, " ", sorc.fireRemaining)
-    # print(sorc.spellcast("firebolt"))
-
-    # jane = Fighter("Jane")
-    # print(jane.hp)
-    # print(jane.attack("melee"))
-
 
     # battle loop:
     # player and enemy drawn on map
@@ -215,29 +213,69 @@ def rollInitiative(hp, ac, toHit, damageDie, damageBonus,
 
 def main():
 
+    # make a player character with input from user
+    validName = 0
+    while(validName == 0):
+        playerClass = input("Welcome! would you like to play as a Fighter or a Sorcerer?\n")
+        if(playerClass != "Fighter" and playerClass != "Sorcerer"):
+            print("Invalid input! Please type either Fighter or Sorcerer (case sensitive)\n")
+        else:
+            print("Wonderful! What is your", playerClass, "'s name?")
+            name = input()
+            validName = 1
+    if (playerClass == "Fighter"):
+        player = Fighter(name)
+    else:
+        player = Sorcerer(name)
     world = worldMap()
-    a = 0
-    b = 0
-    maple = Sorcerer("Maple")
-    print(maple.hp)
-    # while (winState != 1)
-    # (win state will become 1 in a specific encounter)
-    pos = world[a][b]
-    if(pos[0] == "dialog"):
-        print(pos[1])
-    # the position on the map can also have:
-        # healing
+    boundaryReached = -1
+    winState = 0
+    a = 4
+    b = 3
+    while (winState != 1):
+        # (win state will become 1 in a specific encounter)
+        pos = world[a][b]
+        # nothing happens, basic dialog
+        if(pos[0] == "dialog"):
+            print(pos[1])
+        # found a healing item!
+        if(pos[0] == "healing"):
+            print(pos[1])
+            player.setHp(player.hp + pos[2])
         # weapon upgrade
+        if(pos[0] == "weapon"):
+            print(pos[1])
+            player.setDmgBonus(player.dmgBonus + pos[2])
         # armor upgrade
-    if(pos[0] == "encounter"):
-        # I will end up handling these arguments by simply passing a monster object
-        rollInitiative(pos[1], pos[2], pos[3], pos[4], pos[5], pos[6], pos[7], pos[8], pos[9], pos[10], pos[11], pos[12], maple)
-        # the encounter may give a key item to the player, or the location of the goal (winstate trigger)
-        # I should set a trigger to know if this encounter has happened already,
-        # in the case the player back tracks
-    #if the player is still alive after the encounter...
-    #worldMove()
-
+        if(pos[0] == "armor"):
+            print(pos[1])
+            player.setAc(player.ac + pos[2])
+        # A monster appears!
+        if(pos[0] == "encounter"):
+            # I will end up handling these arguments by simply passing a monster object
+            monster = Monster(pos[11])
+            # set monster attributes here
+            rollInitiative(monster, player, pos[6], pos[7], pos[8], pos[9], pos[10])
+            # the encounter may give a key item to the player, or the location of the goal (winstate trigger)
+            # I should set a trigger to know if this encounter has happened already,
+            # in the case the player back tracks
+        # if the player is still alive after the encounter, let them move
+        print("-----------------")
+        print("a: ", a, "b: ", b)
+        # pass current location data into worldMove(), then reassign any new values
+        # !!!! throws a TypeError exception if an invalid value is input for direction- need to handle !!!!
+        (a, b, boundaryReached) = worldMove(a, b, boundaryReached)
+        # if player has reached the edge of the world, let them know 
+        if(boundaryReached == 0):
+            print("Mountains lie in your way, you've gone as far north as you can!")
+        elif(boundaryReached == 1):
+            print("The eastern swamps lay stagnant before you, you cannot continue east!")
+        elif(boundaryReached == 2):
+            print("The plains stretch on forever, you can go no further south.")
+        elif(boundaryReached == 3):
+            print("The forest grows dark and deep, it would be unwise to travel further west")
+        # reset this check in case the player makes the mistake again. 
+        boundaryReached = -1
     return
 
 

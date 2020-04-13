@@ -1,5 +1,5 @@
-encounter,20,13,3,5,6,2,map1.csv,3,2,0,3,skeleton
-dialog,you see a gazebo ahead
+encounter|20|13|5|6|2|map3.csv|3|2|0|3|skeleton|5
+dialog|you see a gazebo ahead
 03
 04
 05
@@ -25,7 +25,7 @@ dialog,you see a gazebo ahead
 25
 26
 27
-28
+dialog|First tile of the game, welcome :)
 29
 30
 31
