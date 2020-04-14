@@ -4,6 +4,7 @@
 
 import random
 import csv
+import time
 
 
 # parent class to player classes and monster class
@@ -32,6 +33,7 @@ class Creature:
 class Monster(Creature):
     def __init__(self, name):
         super().__init__(name)
+        self.movement = 3
 
     # player characters don't need this in this sim, only monsters
     def setsaveBonus(self, bonus):
@@ -46,6 +48,7 @@ class Monster(Creature):
 class Fighter(Creature):
     def __init__(self, name):
         super().__init__(name)
+        self.pcType = "fighter"
         self.maxHp = 38
         self.hp = 38
         self.ac = 16
@@ -56,6 +59,7 @@ class Fighter(Creature):
         self.rangedDmgDie = 8
         self.rangedDmgBonus = 4
         self.healingPotions = 2
+        self.movement = 3
 
     def attack(self, attackType, enemyAc):
         damageDealt = 0
@@ -92,6 +96,7 @@ for a turn\n /heal -quaff a healing potion"
 class Sorcerer(Creature):
     def __init__(self, name):
         super().__init__(name)
+        self.pcType = sorcerer
         self.maxHp = 28
         self.hp = 28
         self.ac = 15
@@ -104,6 +109,7 @@ class Sorcerer(Creature):
         self.fireRemaining = self.maxFire
         self.fearRemaining = self.maxFear
         self.healingPotions = 3
+        self.movement = 3
 
     # quaff a potion of healing
     def healing(self):
@@ -181,41 +187,47 @@ def worldMap():
     return gr
 
 
-# function to allow the player to move about a 6x6 world map
+# function to allow a creature to move about a map/ grid
 # a and b are coordinates: a is the y axis, b is the x.
 # a increases down the grid, b increases to the right. It's funky but it works
 # boundaryReached is used to check if the player is about to go outside the grid
-def worldMove(a, b, boundaryReached):
-    dir = input("What direction would you like to move?\noptions are: north, east, south, west (case sensetive): ")
-    if(dir == "north"):
+# size is the length of a squre grid
+# inDir is the direction the creature wants to move
+def worldMove(a, b, size, inDir):
+    boundReached = -1
+    if(inDir == "north"):
         if(a == 0):
-            boundaryReached = 0
-            return(a, b, boundaryReached)
+            boundReached = 0
+            return(a, b, boundReached)
         else:
             a = a - 1
-            return (a, b, boundaryReached)
-    if(dir == "east"):
-        if(b == 5):
-            boundaryReached = 1
-            return(a, b, boundaryReached)
+            return (a, b, boundReached)
+    if(inDir == "east"):
+        if(b == size - 1):
+            boundReached = 1
+            return(a, b, boundReached)
         else:
             b = b + 1
-            return (a, b, boundaryReached)
-    if(dir == "south"):
-        if(a == 5):
-            boundaryReached = 2
-            return(a, b, boundaryReached)
+            return (a, b, boundReached)
+    if(inDir == "south"):
+        if(a == size - 1):
+            boundReached = 2
+            return(a, b, boundReached)
         else:
             a = a + 1
-            return (a, b, boundaryReached)
-    if(dir == "west"):
+            return (a, b, boundReached)
+    if(inDir == "west"):
         if(b == 0):
-            boundaryReached = 3
-            return(a, b, boundaryReached)
+            boundReached = 3
+            return(a, b, boundReached)
         else:
             b = b - 1
-            return (a, b, boundaryReached)
+            return (a, b, boundReached)
+    if(inDir == "stop"):
+        boundReached = 5
+        return (a, b, boundReached)
     return
+
 
 # Called when the player encounters a monster
 # makes a battle map, prints it to the console
@@ -244,29 +256,146 @@ def rollInitiative(inMonster, inPlayer, inMap, monPos1, monPos2, playerPos1, pla
         if((r + 1) % 8 == 0):
             r = 0
             q = q + 1
+    mapBackupP1 = battleMap[pp1][pp2]
+    mapBackupM1 = battleMap[mp1][mp2]
+    monsterWaited = 0
 
     # battle loop:
     victor = 0
     while(victor == 0):
-        # player and enemy drawn on map
-        mapBackup1 = battleMap[mp1][mp2]
-        mapBackup2 = battleMap[pp1][pp2]
-        battleMap[mp1][mp2] = monIc
+        tookAction = 0
         battleMap[pp1][pp2] = playerIc
+        battleMap[mp1][mp2] = monIc
+        boundReached = -1
         print("---------------------------------------------------------\n")
-        # print the map with creature locations
+        # print the battleMap with creature locations
         for g in battleMap:
             for h in g:
                 print(''.join(h), " ", end = "")
             print()
+
         playerMove = 3
         monsterMove = 3
-        print("\nYou are @. The ", monster.name, "is &. You may move 3 spaces and take an action.\nYour actions are:", '\n', player.printOptions())
-        move = input()
-        # also need to figure out pathing for the enemy "ai"
-        # if player hp goes to 0, game over, return 1. If player succeeds, reward? and 
-        # return 0. Calling function can check the return value and 
-        # give either a game over or continue main loop
+
+        while(tookAction == 0):
+            print("\nYou are @. The ", monster.name, "is &. You may move 3 spaces and take an action.\nYour actions are:", '\n', player.printOptions())
+            action = input()
+
+            if(action == "move"):
+                while(player.movement > 0):
+                    print("pp1: ", pp1, "pp2: ", pp2, "\n mp1: ", mp1, " mp2: ", mp2, "\n")
+
+                    # previous value is used to draw iconc after the player moves away, and to check against when 
+                    # player tries to move into an enemy space
+                    previous = (pp1, pp2)
+                    playerDir = input("Which direction? north, east, south, west (case sensitive)?")
+                    (pp1, pp2, boundReached) = worldMove(pp1, pp2, 7, playerDir)
+
+                    # make sure player stays on the grid
+                    if(boundReached != -1 and boundReached != 5):
+                        print("\nCannot go off the map!")
+                    elif(boundReached == 5):
+                        break
+
+                    # make sure player doesn't bump into monster
+                    elif((pp1, pp2) == (mp1, mp2)):
+                        print("\nCannot enter another creature's space")
+                        pp1 = previous[0]
+                        pp2 = previous[1]
+
+                    # allow the player to move in a cardinal direction
+                    else:
+                        # decrement player's remaining movement
+                        player.movement = player.movement - 1
+                        # fill a bucket to store icons
+                        mapBackupP2 = battleMap[pp1][pp2]
+                        # move the player icon to the new location
+                        battleMap[pp1][pp2] = playerIc
+                        # the previous player location is overwritten with its previous icon
+                        battleMap[previous[0]][previous[1]] = mapBackupP1
+                        # swap bucket values for the next loop
+                        mapBackupP1 = mapBackupP2
+
+                        # print the battleMap with updated creature locations
+                        print("---------------------------------\n")
+                        for g in battleMap:
+                            for h in g:
+                                print(''.join(h), " ", end = "")
+                            print()
+                        print("---------------------------------\n")
+            elif(action == "attack"):
+                # if(player.type = fighter), 
+                # ask what kind of attack
+                tookAction = 1
+            elif(action == "spell"):
+                #ask which spell
+                #account for spell usage limits
+                pass 
+
+            #etc 
+
+        # enemy turn
+        for i in range(0, 3):
+            monsterWaited = 0
+            print("pp1: ", pp1, "pp2: ", pp2, "\n mp1: ", mp1, " mp2: ", mp2, "\n")
+            # move towards the player
+            # calculate differences between coordinates
+            diff1 = mp1 - pp1
+            diff2 = mp2 - pp2
+            # if monster is adjacent to player
+            if(((pp1 - mp1 == 1) and (pp2 == mp2)) or
+            ((mp1 - pp1 == 1) and (pp2 == mp2)) or
+            ((pp2 - mp2 == 1) and (pp1 == mp1)) or
+            ((mp2 - pp2 == 1) and (pp1 == mp1))):
+                monsDir = "stop"
+                monsterWaited = 1
+            # decide in which direction to move
+            elif(abs(diff1) > abs(diff2)):
+                # move along a axis
+                if(diff1 > 1):
+                    monsDir = "north"
+                    #move north
+                elif(diff1 < -1):
+                    monsDir = "south"
+                    # move south
+            elif(abs(diff2) >= abs(diff1)):
+                # move along b axis
+                if(diff2 > 1):
+                    monsDir = "west"
+                    # move west
+                elif(diff2 < -1):
+                    monsDir = "east"
+                    # move east
+
+            mPrevious = (mp1, mp2)
+            (mp1, mp2, none) = worldMove(mp1, mp2, 7, monsDir)
+            if(monsterWaited == 0):
+                mapBackupM2 = battleMap[mp1][mp2]
+                battleMap[mp1][mp2] = monIc
+                battleMap[mPrevious[0]][mPrevious[1]] = mapBackupM1
+                # swap bucket values for the next loop
+                mapBackupM1 = mapBackupM2
+            # print the battleMap with updated creature locations
+            print("---------------------------------\n")
+            print("Monster movement!\n")
+            for g in battleMap:
+                for h in g:
+                    print(''.join(h), " ", end = "")
+                print()
+            print("---------------------------------\n")
+            time.sleep(2)
+
+        # if monster is adjacent to the player
+        if(((pp1 - mp1 == 1) and (pp2 == mp2)) or
+            ((mp1 - pp1 == 1) and (pp2 == mp2)) or
+            ((pp2 - mp2 == 1) and (pp1 == mp1)) or
+            ((mp2 - pp2 == 1) and (pp1 == mp1))):
+            # then attack the player
+            #dmg = monster.attack() <-- need to implement this is the Monster (or Creature?) class
+            # more stuff
+            print("monster attacks\n")
+
+        player.movement = 3
         if(monster.hp == 0):
             victor = 1
         elif(player.hp == 0):
@@ -320,7 +449,7 @@ def main():
 
         # A monster appears!
         #print(pos[0])
-        print(pos[13])
+        #print(pos[13])
         if(pos[0] == "encounter" and int(pos[13]) == 0):
             monster = Monster(pos[11])
             # set monster attributes here
@@ -346,7 +475,8 @@ def main():
         print("a: ", a, "b: ", b)
         # pass current location data into worldMove(), then reassign any new values
         # !!!! throws a TypeError exception if an invalid value is input for direction- need to handle !!!!
-        (a, b, boundaryReached) = worldMove(a, b, boundaryReached)
+        dir = input("What direction would you like to move?\noptions are: north, east, south, west (case sensetive): ")
+        (a, b, boundaryReached) = worldMove(a, b, 6, dir)
         # if player has reached the edge of the world, let them know 
         if(boundaryReached == 0):
             print("Mountains lie in your way, you've gone as far north as you can!")

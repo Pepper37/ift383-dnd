@@ -1,4 +1,4 @@
-encounter|20|13|5|6|2|map3.csv|3|2|0|3|skeleton|5
+encounter|20|13|5|6|2|map3.csv|3|2|0|3|skeleton|5|0|dialog for after the fight
 dialog|you see a gazebo ahead
 03
 04
@@ -25,7 +25,7 @@ dialog|you see a gazebo ahead
 25
 26
 27
-dialog|First tile of the game, welcome :)
+encounter|20|13|5|6|2|map3.csv|1|4|5|2|skeleton|5|0|dialog for after the fight|melee
 29
 30
 31
