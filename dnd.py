@@ -14,19 +14,27 @@ class Creature:
 
     # setters
     def setHp(self, hp):
-        self.hp = hp
+        self.hp = int(hp)
 
     def setAc(self, ac):
-        self.ac = ac
+        self.ac = int(ac)
 
     def setToHit(self, toHit):
-        self.toHit = toHit
+        self.toHit = int(toHit)
 
     def setDmgDie(self, die):
-        self.dmgDie = die
+        self.dmgDie = int(die)
 
     def setDmgBonus(self, bonus):
-        self.dmgBonus = bonus
+        self.dmgBonus = int(bonus)
+
+    def attack(self, enemyAc):
+        self.damageDealt = 0
+        hit = ((random.randint(0, 20) + self.toHit) >= enemyAc)
+        if(hit):
+            # roll damage
+            self.damageDealt = self.damageDealt + random.randint(0, self.dmgDie) + self.dmgBonus
+        return self.damageDealt
 
 
 # Monster class inherits from Creature
@@ -37,7 +45,7 @@ class Monster(Creature):
 
     # player characters don't need this in this sim, only monsters
     def setsaveBonus(self, bonus):
-        self.saveBonus = bonus
+        self.saveBonus = int(bonus)
 
     # melee or ranged?
     def setAttackType(self, attack):
@@ -61,23 +69,25 @@ class Fighter(Creature):
         self.healingPotions = 2
         self.movement = 3
 
+    # overload the attack function: fighters have two kinds of attacks
     def attack(self, attackType, enemyAc):
-        damageDealt = 0
+        self.damageDealt = 0
         if(attackType == "melee"):
             # fighter get two attacks
             for i in range(0, 2):
                 # roll a d20 to hit
-                hit = ((random.randint(0, 20) + meleeToHit) >= enemyAc)
+                hit = ((random.randint(0, 20) + self.meleeToHit) >= enemyAc)
                 if(hit):
                     # roll damage
-                    damageDealt = damageDealt + random.randint(0, self.meleeDmgDie) + self.meleeDmgBonus
-            return damageDealt
+                    self.damageDealt = self.damageDealt + random.randint(0, self.meleeDmgDie) + self.meleeDmgBonus
+            return self.damageDealt
+
         elif(attackType == "ranged"):
             for i in range(0, 2):
-                hit = ((random.randint(0, 20) + meleeToHit) >= enemyAc)
+                hit = ((random.randint(0, 20) + self.meleeToHit) >= enemyAc)
                 if(hit):
-                    damageDealt = damageDealt + random.randint(0, self.rangedDmgDie) + self.rangedDmgBonus
-            return damageDealt
+                    self.damageDealt = self.damageDealt + random.randint(0, self.rangedDmgDie) + self.rangedDmgBonus
+            return self.damageDealt
         else:
             # in case something went wrong, return -1
             return -1
@@ -88,7 +98,7 @@ class Fighter(Creature):
         self.hp = self.hp + random.randint(0, 4) + 4
 
     def printOptions(self):
-        return "/attack -attack using longsword (need to be adjacent to enemy) \n    or using longbow \
+        return " /move: move up to three spaces \n /attack -attack using longsword (need to be adjacent to enemy) \n    or using longbow \
 (less accurate but you can have distance)\n /dodge -less likely to be hit \
 for a turn\n /heal -quaff a healing potion"
 
@@ -96,7 +106,7 @@ for a turn\n /heal -quaff a healing potion"
 class Sorcerer(Creature):
     def __init__(self, name):
         super().__init__(name)
-        self.pcType = sorcerer
+        self.pcType = "sorcerer"
         self.maxHp = 28
         self.hp = 28
         self.ac = 15
@@ -114,13 +124,6 @@ class Sorcerer(Creature):
     # quaff a potion of healing
     def healing(self):
         self.hp = self.hp + random.randint(0, 4) + 4
-
-    def attack(self, enemyAc):
-        damageDealt = 0
-        hit = ((random.randint(0, 20) + toHit) >= enemyAc)
-        if(hit):
-            # roll damage
-            damageDealt = damageDealt + random.randint(0, self.dmgDie) + self.dmgBonus
 
     # sorcerer has spells available
     def spellcast(self, spell):
@@ -229,6 +232,18 @@ def worldMove(a, b, size, inDir):
     return
 
 
+# returns true if two icons are adjacent to one another on a grid
+def adjacent(in1, in2, in3, in4):
+    if(((in1 - in3 == 1) and (in2 == in4)) or
+            ((in3 - in1 == 1) and (in2 == in4)) or
+            ((in2 - in4 == 1) and (in1 == in3)) or
+            ((in4 - in2 == 1) and (in1 == in3)) or
+            ((abs(in1 - in3) == 1) and (abs(in2 - in4) == 1))):
+        return 1
+    else:
+        return 0
+
+
 # Called when the player encounters a monster
 # makes a battle map, prints it to the console
 # gives the player a list of options, movement rules are enforced
@@ -267,7 +282,7 @@ def rollInitiative(inMonster, inPlayer, inMap, monPos1, monPos2, playerPos1, pla
         battleMap[pp1][pp2] = playerIc
         battleMap[mp1][mp2] = monIc
         boundReached = -1
-        print("---------------------------------------------------------\n")
+        print("---------------------------------\n")
         # print the battleMap with creature locations
         for g in battleMap:
             for h in g:
@@ -278,7 +293,8 @@ def rollInitiative(inMonster, inPlayer, inMap, monPos1, monPos2, playerPos1, pla
         monsterMove = 3
 
         while(tookAction == 0):
-            print("\nYou are @. The ", monster.name, "is &. You may move 3 spaces and take an action.\nYour actions are:", '\n', player.printOptions())
+            attacked = 0
+            print("\nYou are @. The ", monster.name, "is &. You may move 3 spaces and take an action.\nYour actions are:\n", '\n', player.printOptions())
             action = input()
 
             if(action == "move"):
@@ -288,7 +304,7 @@ def rollInitiative(inMonster, inPlayer, inMap, monPos1, monPos2, playerPos1, pla
                     # previous value is used to draw iconc after the player moves away, and to check against when 
                     # player tries to move into an enemy space
                     previous = (pp1, pp2)
-                    playerDir = input("Which direction? north, east, south, west (case sensitive)?")
+                    playerDir = input("Which direction? north, east, south, west, or stop (case sensitive)? \n")
                     (pp1, pp2, boundReached) = worldMove(pp1, pp2, 7, playerDir)
 
                     # make sure player stays on the grid
@@ -323,9 +339,36 @@ def rollInitiative(inMonster, inPlayer, inMap, monPos1, monPos2, playerPos1, pla
                                 print(''.join(h), " ", end = "")
                             print()
                         print("---------------------------------\n")
+
             elif(action == "attack"):
-                # if(player.type = fighter), 
-                # ask what kind of attack
+                while(attacked == 0):
+                    dmg = 0
+                    temp = ""
+                    if(player.pcType == "fighter"):
+                        temp = input("melee or ranged? ")
+                        print("---------------------------------\n")
+                        if(temp == "melee"):
+                            if(adjacent(mp1, mp2, pp1, pp2) == 1):
+                                attacked = 1
+                                dmg = player.attack("melee", monster.ac)
+                                monster.setHp(monster.hp - dmg)
+                                if(dmg > 0):
+                                    print("You swing your longsword, dealing ", dmg, " points of damage to the ", monster.name, "\n", sep = '')
+                                elif(dmg == 0):
+                                    print("You swing your longsword, but the ", monster.name, " deftly leaps clear of the blade!\n", sep = '')
+                            else:
+                                print("\nYou need to be adjacent to the monster!\n")
+                        if(temp == "ranged"):
+                            attacked = 1
+                            dmg = player.attack("ranged", monster.ac)
+                            monster.setHp(monster.hp - dmg)
+                            if(dmg > 0):
+                                print("You loose an arrow, striking the foul creature and dealing ", dmg, " points of damage\n", sep = '')
+                            elif(dmg == 0):
+                                print("You loose an arrow, it strikes the ", monster.name, "'s armored gauntlet, destroyed on impact, dealing no damage \n", sep = '')
+                    print("player hp: ", player.hp, " monster hp: ", monster.hp)
+                    tookAction = 1
+            elif(action == "dodge"):
                 tookAction = 1
             elif(action == "spell"):
                 #ask which spell
@@ -334,7 +377,7 @@ def rollInitiative(inMonster, inPlayer, inMap, monPos1, monPos2, playerPos1, pla
 
             #etc 
 
-        # enemy turn
+        # enemy turn melee type
         for i in range(0, 3):
             monsterWaited = 0
             print("pp1: ", pp1, "pp2: ", pp2, "\n mp1: ", mp1, " mp2: ", mp2, "\n")
@@ -343,10 +386,7 @@ def rollInitiative(inMonster, inPlayer, inMap, monPos1, monPos2, playerPos1, pla
             diff1 = mp1 - pp1
             diff2 = mp2 - pp2
             # if monster is adjacent to player
-            if(((pp1 - mp1 == 1) and (pp2 == mp2)) or
-            ((mp1 - pp1 == 1) and (pp2 == mp2)) or
-            ((pp2 - mp2 == 1) and (pp1 == mp1)) or
-            ((mp2 - pp2 == 1) and (pp1 == mp1))):
+            if(adjacent(pp1, pp2, mp1, mp2) == 1):
                 monsDir = "stop"
                 monsterWaited = 1
             # decide in which direction to move
@@ -354,7 +394,7 @@ def rollInitiative(inMonster, inPlayer, inMap, monPos1, monPos2, playerPos1, pla
                 # move along a axis
                 if(diff1 > 1):
                     monsDir = "north"
-                    #move north
+                    # move north
                 elif(diff1 < -1):
                     monsDir = "south"
                     # move south
@@ -369,6 +409,7 @@ def rollInitiative(inMonster, inPlayer, inMap, monPos1, monPos2, playerPos1, pla
 
             mPrevious = (mp1, mp2)
             (mp1, mp2, none) = worldMove(mp1, mp2, 7, monsDir)
+            # fixes a bug whereby monster waiting would not draw the monsIc
             if(monsterWaited == 0):
                 mapBackupM2 = battleMap[mp1][mp2]
                 battleMap[mp1][mp2] = monIc
@@ -376,29 +417,33 @@ def rollInitiative(inMonster, inPlayer, inMap, monPos1, monPos2, playerPos1, pla
                 # swap bucket values for the next loop
                 mapBackupM1 = mapBackupM2
             # print the battleMap with updated creature locations
-            print("---------------------------------\n")
-            print("Monster movement!\n")
-            for g in battleMap:
-                for h in g:
-                    print(''.join(h), " ", end = "")
-                print()
-            print("---------------------------------\n")
-            time.sleep(2)
+                print("---------------------------------\n")
+                print("Monster movement!\n")
+                for g in battleMap:
+                    for h in g:
+                        print(''.join(h), " ", end = "")
+                    print()
+                print("---------------------------------\n")
+                time.sleep(2)
 
-        # if monster is adjacent to the player
-        if(((pp1 - mp1 == 1) and (pp2 == mp2)) or
-            ((mp1 - pp1 == 1) and (pp2 == mp2)) or
-            ((pp2 - mp2 == 1) and (pp1 == mp1)) or
-            ((mp2 - pp2 == 1) and (pp1 == mp1))):
-            # then attack the player
-            #dmg = monster.attack() <-- need to implement this is the Monster (or Creature?) class
+        if(adjacent(pp1, pp2, mp1, mp2) == 1):
+            # Monster attacks player
+            dmg = monster.attack(player.ac)
+            dmg2 = monster.attack(player.ac)
+            # disadvantage if player took dodge action
+            if(action == "dodge"):
+                dmg = min(dmg, dmg2)
+            player.setHp(player.hp - dmg)
             # more stuff
-            print("monster attacks\n")
+            print("monster attacks!\nYou take ", dmg, " points of damage")
+            print("player hp: ", player.hp, " monster hp: ", monster.hp)
 
         player.movement = 3
-        if(monster.hp == 0):
+        if(monster.hp < 0):
+            print("\n The ", monster.name, " has been vanquished! \n")
             victor = 1
-        elif(player.hp == 0):
+        elif(player.hp < 0):
+            print("You have died. Sad. \n")
             victor = 2
     return victor
 
@@ -463,6 +508,7 @@ def main():
             # return the player object with updated battle damage/ updated rewards
             print("before: ", player.hp)
             var = rollInitiative(monster, player, pos[6], pos[7], pos[8], pos[9], pos[10])
+            print("victor: ", var)
             print("after: ", player.hp)
             # the encounter may give a key item to the player, or the location of the goal (winstate trigger)
             # I should set a trigger to know if this encounter has happened already,
