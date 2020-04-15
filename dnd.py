@@ -98,7 +98,7 @@ class Fighter(Creature):
         self.hp = self.hp + random.randint(0, 4) + 4
 
     def printOptions(self):
-        return " /move: move up to three spaces \n /attack -attack using longsword (need to be adjacent to enemy) \n    or using longbow \
+        return "/move: move up to three spaces \n /attack -attack using longsword (need to be adjacent to enemy) \n    or using longbow \
 (less accurate but you can have distance)\n /dodge -less likely to be hit \
 for a turn\n /heal -quaff a healing potion"
 
@@ -274,6 +274,7 @@ def rollInitiative(inMonster, inPlayer, inMap, monPos1, monPos2, playerPos1, pla
     mapBackupP1 = battleMap[pp1][pp2]
     mapBackupM1 = battleMap[mp1][mp2]
     monsterWaited = 0
+    monMoveTicker = 0
 
     # battle loop:
     victor = 0
@@ -378,65 +379,123 @@ def rollInitiative(inMonster, inPlayer, inMap, monPos1, monPos2, playerPos1, pla
             #etc 
 
         # enemy turn melee type
-        for i in range(0, 3):
-            monsterWaited = 0
-            print("pp1: ", pp1, "pp2: ", pp2, "\n mp1: ", mp1, " mp2: ", mp2, "\n")
-            # move towards the player
-            # calculate differences between coordinates
-            diff1 = mp1 - pp1
-            diff2 = mp2 - pp2
-            # if monster is adjacent to player
-            if(adjacent(pp1, pp2, mp1, mp2) == 1):
-                monsDir = "stop"
-                monsterWaited = 1
-            # decide in which direction to move
-            elif(abs(diff1) > abs(diff2)):
-                # move along a axis
-                if(diff1 > 1):
-                    monsDir = "north"
-                    # move north
-                elif(diff1 < -1):
-                    monsDir = "south"
-                    # move south
-            elif(abs(diff2) >= abs(diff1)):
-                # move along b axis
-                if(diff2 > 1):
-                    monsDir = "west"
-                    # move west
-                elif(diff2 < -1):
-                    monsDir = "east"
-                    # move east
+        if(monster.attackType == "melee"):
+            for i in range(0, 3):
+                monsterWaited = 0
+                print("pp1: ", pp1, "pp2: ", pp2, "\n mp1: ", mp1, " mp2: ", mp2, "\n")
+                # move towards the player
+                # calculate differences between coordinates
+                diff1 = mp1 - pp1
+                diff2 = mp2 - pp2
+                # if monster is adjacent to player
+                if(adjacent(pp1, pp2, mp1, mp2) == 1):
+                    monsDir = "stop"
+                    monsterWaited = 1
+                # decide in which direction to move
+                elif(abs(diff1) > abs(diff2)):
+                    # move along a axis
+                    if(diff1 > 1):
+                        monsDir = "north"
+                        # move north
+                    elif(diff1 < -1):
+                        monsDir = "south"
+                        # move south
+                elif(abs(diff2) >= abs(diff1)):
+                    # move along b axis
+                    if(diff2 > 1):
+                        monsDir = "west"
+                        # move west
+                    elif(diff2 < -1):
+                        monsDir = "east"
+                        # move east
 
-            mPrevious = (mp1, mp2)
-            (mp1, mp2, none) = worldMove(mp1, mp2, 7, monsDir)
-            # fixes a bug whereby monster waiting would not draw the monsIc
-            if(monsterWaited == 0):
-                mapBackupM2 = battleMap[mp1][mp2]
-                battleMap[mp1][mp2] = monIc
-                battleMap[mPrevious[0]][mPrevious[1]] = mapBackupM1
-                # swap bucket values for the next loop
-                mapBackupM1 = mapBackupM2
-            # print the battleMap with updated creature locations
-                print("---------------------------------\n")
-                print("Monster movement!\n")
-                for g in battleMap:
-                    for h in g:
-                        print(''.join(h), " ", end = "")
-                    print()
-                print("---------------------------------\n")
-                time.sleep(2)
+                mPrevious = (mp1, mp2)
+                (mp1, mp2, none) = worldMove(mp1, mp2, 7, monsDir)
+                # fixes a bug whereby monster waiting would not draw the monsIc
+                if(monsterWaited == 0):
+                    mapBackupM2 = battleMap[mp1][mp2]
+                    battleMap[mp1][mp2] = monIc
+                    battleMap[mPrevious[0]][mPrevious[1]] = mapBackupM1
+                    # swap bucket values for the next loop
+                    mapBackupM1 = mapBackupM2
+                # print the battleMap with updated creature locations
+                    print("---------------------------------\n")
+                    print("Monster movement!\n")
+                    for g in battleMap:
+                        for h in g:
+                            print(''.join(h), " ", end = "")
+                        print()
+                    print("---------------------------------\n")
+                    time.sleep(2)
 
-        if(adjacent(pp1, pp2, mp1, mp2) == 1):
             # Monster attacks player
+            if(adjacent(pp1, pp2, mp1, mp2) == 1):
+                dmg = monster.attack(player.ac)
+                dmg2 = monster.attack(player.ac)
+                # disadvantage if player took dodge action
+                if(action == "dodge"):
+                    dmg = min(dmg, dmg2)
+                player.setHp(player.hp - dmg)
+                # more stuff
+                print("monster attacks!\nYou take ", dmg, " points of damage")
+                print("player hp: ", player.hp, " monster hp: ", monster.hp)
+
+        # ranged attack type
+        # ranged monster just moves left and right on the map. simple.
+
+        elif(monster.attackType == "ranged"):
+            if(monMoveTicker == 0):
+                for i in range(0, 2):
+                    mPrevious = (mp1, mp2)
+                    (mp1, mp2, none) = worldMove(mp1, mp2, 7, "west")
+                    # fixes a bug whereby monster waiting would not draw the monsIc
+                    if(monsterWaited == 0):
+                        mapBackupM2 = battleMap[mp1][mp2]
+                        battleMap[mp1][mp2] = monIc
+                        battleMap[mPrevious[0]][mPrevious[1]] = mapBackupM1
+                        # swap bucket values for the next loop
+                        mapBackupM1 = mapBackupM2
+                    # print the battleMap with updated creature locations
+                        print("---------------------------------\n")
+                        print("Monster movement!\n")
+                        for g in battleMap:
+                            for h in g:
+                                print(''.join(h), " ", end = "")
+                            print()
+                        print("---------------------------------\n")
+                        time.sleep(2)
+                monMoveTicker = 1
+            # I know this is not good practice, I should refactor this movement block into a function
+            # I might do that later, or I might just leave this as-is
+            elif(monMoveTicker == 1):
+                for i in range(0, 2):
+                    mPrevious = (mp1, mp2)
+                    (mp1, mp2, none) = worldMove(mp1, mp2, 7, "east")
+                    # fixes a bug whereby monster waiting would not draw the monsIc
+                    if(monsterWaited == 0):
+                        mapBackupM2 = battleMap[mp1][mp2]
+                        battleMap[mp1][mp2] = monIc
+                        battleMap[mPrevious[0]][mPrevious[1]] = mapBackupM1
+                        # swap bucket values for the next loop
+                        mapBackupM1 = mapBackupM2
+                    # print the battleMap with updated creature locations
+                        print("---------------------------------\n")
+                        print("Monster movement!\n")
+                        for g in battleMap:
+                            for h in g:
+                                print(''.join(h), " ", end = "")
+                            print()
+                        print("---------------------------------\n")
+                        time.sleep(2)
+                monMoveTicker = 0
+
             dmg = monster.attack(player.ac)
-            dmg2 = monster.attack(player.ac)
-            # disadvantage if player took dodge action
-            if(action == "dodge"):
-                dmg = min(dmg, dmg2)
             player.setHp(player.hp - dmg)
-            # more stuff
-            print("monster attacks!\nYou take ", dmg, " points of damage")
-            print("player hp: ", player.hp, " monster hp: ", monster.hp)
+            if(dmg > 0):
+                print("\nThe ", monster.name, " shoots an arrow from its longbow, you take ", dmg,
+                    " points of damage as the arrow strikes a joint between you armor!\n", sep = '')
+            elif(dmg == 0):
+                print("\nAn arrow flies at you, but you lunge forward, ducking out of the missile's way\n")
 
         player.movement = 3
         if(monster.hp < 0):
