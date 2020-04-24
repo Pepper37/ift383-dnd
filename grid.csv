@@ -1,36 +1,49 @@
-encounter|20|13|5|6|2|map3.csv|3|2|0|3|skeleton|5|0|dialog for after the fight
-dialog|you see a gazebo ahead
-03
-04
-05
-06
-07
-08
-09
-10
-11
-12
-13
-14
-15
-16
-17
-18
-19
-20
-21
-22
-23
-24
-25
-26
-27
-encounter|20|13|5|6|2|map3.csv|1|4|5|2|skeleton|5|0|dialog for after the fight|melee
-29
-30
-31
-32
-33
-34
-35
-36
+potion|In the northern most point of the forest, a grove of trees opens to you.  A tiny sprite alights onto a nearby tree branch, and blinks at you. In your pocket, you find an extra healing potion. If you look about you, the sprite is nowhere to be found.|You stand in an empty forest grove.|0
+weapon|At the base of a mountain, you happen upon a large cave. Deep inside the cave, you find rough bedding next to a pile of rubble, including a surprisingly well-smithed blade. It is somewhat stronger than what you currently weild, and you take it.|You stand at the mouth of a large empty cave, at the edge of a forest and the foot of a mountain.|0
+encounter|21|17|5|6|2|map3.csv|2|1|6|5|hob goblin|-1|0|This hobgoblin must have made a home in these caves. You look through a small nearby cave, and find nothing of value. The caves seem to continue a little to the west...|melee|2
+dialog|The mountains continue to rise to the east, and you see a pass that you can traverse. Going further north would be impossible, but you have a good view of the forest to the south. 
+dialog|You climb further into the mountainous range, to your north is a sheer, unclimbable wall, but you can continue to follow the pass east.
+encounter|32|14|5|10|3|map3.csv|2|4|5|1|centaur|2|0|The centaur is almost dead, coughing, utters a small gasping message: "please, adventurer, leave me be! I can pay you for your mercy, for I know of a secret in a cave in the mountains to the south. This is no mere trinket, and you willl know what I speak of when you find it." You leave the centaur be.|ranged|0
+armor|You climb to a mountain's peak. You find a nest, and within the nest, a gleaming horned helm. Your AC increases by 1!|You stand a mountain's peak, and see the valley and forest stretch to the south-west below, and, is that a small hut in the mountains directly south?|0
+dialog|The forest grows dark to the west, and you feel almost lost in these woods. How long have you been traveling now?
+end|You come accross a sunny, golden grove of fruit trees. There is a small green hill in the center, with a wooden door. Inspecting the door, you see a hole leading into a small, dark chamber. You cannot see within, nor reach inside. The outside of the hole is painted with green moss, and you swear you hear the wind say something about a gem in the mountain peaks. You can do nothing more here for now, but are drawn to the mountains.| You approach the small hillock in the golden grove. You insert the green gem the hag gave you into the hole in the door. The earth quakes beneath your feet, and the door creaks, swings open! Within, a the glow of gold washes over you. You enter the door, to take your treasure.
+dialog|The mountain's foothills meet dark, whispering woods. 
+potion|A pool of water flows from the hills at the edge of the forest. The trees here grow so large and healthy! You fill a flask from the pool, testing it you discover it might act as a healing potion!|You stand at a pool of magic water at the mountain's foothills. Taking more would be greedy...|0
+armor|Climbing into the foothills, you trip over a peice of hard metal. Taking a look, you discover a bracer left under some rocks. Your AC increases by 1|Mountains rise above you to the east.|0
+dialog|You climb further into the eastern mountin range. You feel like you hear a rough voice to the north.. friend or foe? 
+dialog|The mountains stretch steeply east, but you can traverse north or west. Nonetheless, you feel a little claustrophobic in here, surrounded by steep rock. 
+encounter|105|17|8|12|7|map2.csv|1|2|6|2|gazebo|7|0|The splintered remains of the Gazebo lay at your feet, and you stand atop a hillock surrounded by trees. What was a gazebo doing out here? Or was it just a mimic... You shudder at the thought of how that could have gone. |melee|5
+armor|Jumping over a small stream, you almost don't notice the gleam. You stop to inspect the stream, and under some mud find a small ring. Wearing it increases your AC by 1!|You stand at the edge of a stream, forest stretching in all directions.|0
+healing|You pause to take a sip of water from a clear stream. It's so rejuvenating! You regain 7 HP.|You stand at a stream in the forest, only a little light comes in from the canopy above.|0
+weapon|Your footfall, normally quiet atop the undergrowth of forest, crunches against a pile of bones. Looking down, among the rubble is a whetstone in good shape! Taking some time, you sharpen your blade. Weapon damage has increased.|A small pile of bones lies at your feet, but nothing else of interest is here.|0
+encounter|32|13|5|8|2|map1.csv|5|5|1|1|skeleton|2|0|Looking about you is a mess of skeletal debris. Perhaps other adventurers have fought skeletons here before you. You put the thought aside and look about. To the north and east are the foothills of mountains, to the west, the forest, and the south, the river flows through the valley.|ranged|3
+dialog|The mountains rise steep to the north and the east, casting a shadow over you, and the river valley flows to the south. 
+key|You summit a tall crest of a mountain. At the top, you see a green stone on a pedestal. Reaching for the stone, a hand grabs yours. "This gem is yours adventurer, yes! You've earned it," a wizened old woman says to you, "but, make haste! To the woods. THEY are looking for you now..." The woman cackles, and her image fades. Leaving you alone, holding a large green shard of a gem.|You look down accross the valley as the wind rushes past. From here, you can clearly make out the forest where your treasure of legend awaits. |0
+dialog|You pause, the forest has grown quiet. it feels ominous, then passes as the sound of birds come back to your hearing. Maybe it was nothing...
+encounter|32|13|2|8|4|map2.csv|1|3|6|6|dryad|2|0|The body of the dryad decomposes into the earth where it fell. The forest spirit must have been a guardian of some sort, you must be getting close to the fabled treasure.|ranged|1
+encounter|65|15|7|6|4|map2.csv|2|4|6|1|troll|-1|0|Sunlight peeks through the canopy above, and where it strikes the flesh of the troll, creates stone. The forest lays still all about you.|melee|1
+dialog|Trees envelop you vision from the north to the west, and south along the banks of the river. To the direct south is more valley, and far to the east are the mountains watching over it all. 
+potion|As you make your way down a grassy hill, you lose grip and begin tumbling. Head over heals you tumble until landing with a thud. Looking up to see if anyone saw, you notice the glimmer of a bottle hidden among an old campsite. It is, surprisingly enough, a potion of healing! Seems the embarrassment was worth it.|You stand at the foot of a hill in the valley. The grass stretches over streams and groves to the mountains in the east, and the river flows south.|0
+encounter|15|12|4|6|2|map1.csv|0|5|6|1|kobold|-2|0|As the kobold lies still, defeated, you carefully avoid its traps as you make your way. Valley lies west, and mountains east.|ranged|2
+dialog|Climbing these mountains has already made you weary. The pass continues north-south.
+healing|You happen accross an old campsite. The occupants long gone. You take some time to rest, regaining 7 HP.|You stand among the old campsite. Taking more time to rest would be foolish. Onward!|0
+weapon|You walk along the forest, and snag your foot on a root you swear hadn't been there a moment before. As you fall, your blade flies out in front of you. Taking time to search, you can't find it. You do find, however, a dark, iron blade with an oak hilt. Seems better than your previous weapon. You make sure to thank the forest before pressing forward. |You stand alone in a forest which is quietly watching you. |0
+dialog|You are at the edge of the forest of legends. The rush of the valley river is to the east, the forest to your north and west.
+dialog|You wade through a waist-high segment of the river, only way to get accross. To the east by north-east is the valley, and to the west is the forest. Far to the east are the mountains. 
+encounter|52|15|9|8|6|map1.csv|1|1|4|4|cyclops|-2|0|You heard rumors of cyclopses, but never expected to actually fight one! The monster's body lies at the river's edge. The mountains reached towards the east, and the river valley north by south. |melee|0
+dialog|These are the foothills of the mountains, which stretch south, east and north-east. You hear a trickling sound to the direct east, up a cliff. 
+healing|A small spring pours forth fresh water from the rocks here. You watch as the water flows into the river below. Taking a quaff of the water, you heal 7 hp.|It would be greedy to take any more water from this spring. The mountains stretch north and south, and from here you can see the distant forest west, past the valley. |0
+dialog|Quiet, dark forest surrounds you. You think to yourself, what treasures lie in wait in this very forest?
+encounter|15|12|4|6|2|map1.csv|0|5|6|1|kobold|-2|0|You see hanging stones above and tripwires below. Kobold traps. You avoid them, as you make your way. Forest surrounds you, but you hear rushing water to the east. |melee|2
+armor|Under the water at the bank of the river, you find a breastplate in surprisingly good condition. Your AC increases by 1!|Water rushes at your feet as you stand at the river's bank. The forest is to the northwest, valley to the north-east. |0
+dialog|Clear water meanders through lush green landscape in this calm valley. you see the fringes of the woods to the west and north, and watch the river flow from the mountains far in the north. 
+dialog|You step out upon a wide valley. You've heard rumors of great treasures in the forest to the west, and secrets in the mountains to the east. The valley stretches to the north ahead.
+dialog|Climbing into the foothills, you see strange outcroppings of rock. Upon close inspection, they appear to be nothing more than weird rocks. You feel foolish getting your hopes up.
+dialog|The rocks here are steep, and travel takes time. At a small summit, you watch the mountain range stretch far to the north and south. 
+dialog|Here the forest is swampy and wet. You find little value in haning around here much longer. 
+potion|As you make your way through the ankle-high water here, you hear a clink against your foot. Picking the object up, you discover a healing potion some poor soul must have lost in the river.|The river meets a swampy bit of forest here. The forest stretches ominously to the north, the river to the east. |0
+encounter|32|13|5|8|2|map1.csv|1|4|5|2|skeleton|2|0|The skeleton's undead nature is gone, its lifeless bones litter the ground. The forest grows darker to the north. |melee|3
+dialog|You look towards the north, following the valley as it stretches, seemingly forever, flanked by mountains on its right, which curve around to the north. You wonder where this river might come from. 
+dialog|The southern most foothills meet the valley here. You can climb the mountains to the east, or follow the rviver north or west. 
+encounter|85|13|8|12|5|map3.csv|0|6|4|1|hill giant|-1|0|You can see why the hill giant gets its name. These hills are the most hilly-like hills you've come accross. The stretch their way to the north and the east. |melee|-1
+weapon|You climb a particularly tall hill, and at the top find a cave. It smells of rot. You cover your nose and mouth, and go in. Allowing only a few minutes to search, you find nothing. Determined, you press on to the back of the cave, where you find a small ring. Outside, you  put it on, and you feel your connection with your blade improve. Your weapon damage has increased!|You stand at the mouth of a foul smelling cave. No way you're going back in there!|0
