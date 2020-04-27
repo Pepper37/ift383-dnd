@@ -36,7 +36,7 @@ class Creature:
         if(hit):
             # roll damage
             self.damageDealt = self.damageDealt + random.randint(
-                                0, self.dmgDie) + self.dmgBonus
+                0, self.dmgDie) + self.dmgBonus
         return self.damageDealt
 
     def initiative(self):
@@ -87,14 +87,17 @@ class Fighter(Creature):
                 hit = ((random.randint(0, 20) + self.meleeToHit) >= enemyAc)
                 if(hit):
                     # roll damage
-                    self.damageDealt = self.damageDealt + random.randint(0, self.meleeDmgDie) + self.dmgBonus
+                    self.damageDealt = self.damageDealt\
+                        + random.randint(0, self.meleeDmgDie) + self.dmgBonus
             return self.damageDealt
 
         elif(attackType == "ranged"):
             for i in range(0, 2):
                 hit = ((random.randint(0, 20) + self.meleeToHit) >= enemyAc)
                 if(hit):
-                    self.damageDealt = self.damageDealt + random.randint(0, self.rangedDmgDie) + self.rangedDmgBonus
+                    self.damageDealt = self.damageDealt \
+                        + random.randint(0, self.rangedDmgDie) \
+                        + self.rangedDmgBonus
             return self.damageDealt
         else:
             # in case something went wrong, return -1
@@ -107,9 +110,10 @@ class Fighter(Creature):
         self.healingPotions = self.healingPotions - 1
 
     def printOptions(self):
-        return "/move: move up to three spaces, then: \n /attack -attack using longsword (need to be adjacent to enemy) \n    or using longbow \
-(less accurate but you can have distance)\n /dodge -less likely to be hit \
-for a turn\n /heal -quaff a healing potion\n"
+        return "/move: move up to three spaces, then: \n 'attack' -attack \
+using longsword (need to be adjacent to enemy) \n    or using longbow \
+(less accurate but you can have distance)\n 'dodge' -less likely to be hit \
+for a turn\n 'heal' -quaff a healing potion\n"
 
 
 class Sorcerer(Creature):
@@ -146,7 +150,8 @@ class Sorcerer(Creature):
     def spellcast(self, spell, stat):
         if(spell == "firebolt"):
             # a single fire bolt does 1d10
-            hit = ((random.randint(0, 20) + self.toHit + 2) >= int(stat)) # stat is enemy ac
+            # input param stat is enemy ac
+            hit = ((random.randint(0, 20) + self.toHit + 2) >= int(stat))
             if(hit):
                 return random.randint(0, 10)
             else:
@@ -157,12 +162,14 @@ class Sorcerer(Creature):
             else:
                 self.fireRemaining = self.fireRemaining - 1
                 # fireballs do 8d6
-                # This returns a more random number, as "8 * randomint(0,6)" always returns a multiple of 8"
+                # This returns a more random number,
+                # as "8 * randomint(0,6)" always returns a multiple of 8"
                 monSave = ((random.randint(0, 20) + int(stat)))
                 sum = 0
                 for i in range(0, 8):
                     sum = sum + random.randint(0, 6)
-                    # if monster succeeds on its saving throw, it takes half damage
+                    # if monster succeeds on its saving throw,
+                    # it takes half damage
                 if(monSave >= self.spellSaveDc):
                     sum = sum // 2
                 return sum
@@ -180,11 +187,14 @@ class Sorcerer(Creature):
                     return 2
 
     def printOptions(self):
-        return "/move -move up to three spaces, then:\n /firebolt -unlimited uses, ranged spell attack\n /fireball -much stronger than Firebolt,\
+        return "'move' -move up to three spaces, then:\n 'firebolt' \
+-unlimited uses, ranged spell attack\n 'fireball' -much stronger than Firebolt,\
  enemy rolls a saving throw and takes half damage on a save,\
- limited to 3 uses per rest\n /fear -if enemy fails save, causes them to run away from the encounter,\
- only one use per rest\n /attack -pitiful for a sorcerer to attempt to attack with a dagger, but you can if you really want to...\n \
- /dodge -less likely to be hit for a turn\n /heal -quaff a healing potion\n"
+ limited to 3 uses per rest\n 'fear' -if enemy fails save, causes them \
+ to run away from the encounter,\
+ only one use per rest\n 'attack' -pitiful for a sorcerer to attempt to attack \
+ with a dagger, but you can if you really want to...\n \
+ 'dodge' -less likely to be hit for a turn\n 'heal' -quaff a healing potion\n"
 
 
 # make a square grid of a given size using a 2D array, filled with 0's
@@ -207,9 +217,11 @@ def worldMap():
     # read a csv file
     # source: https://www.tutorialspoint.com/reading-and-writing-csv-file-using-python
     file = open('grid.csv', 'r', newline='')
-    obj = csv.reader(file, delimiter='|')    # using | as a delimiter so I can write messages with commas
+    # using | as a delimiter so I can write messages with commas
+    obj = csv.reader(file, delimiter='|')
 
-    # every element in the gr 2D array should be populated with an array: the rows of obj
+    # every element in the gr 2D array should be
+    # populated with an array: the rows of obj
     n = 0
     m = 0
     for row in obj:
@@ -296,15 +308,18 @@ def randomWeapon():
     # makes a battle map, prints it to the console
     # gives the player a list of options, movement rules are enforced
     # enemy "ai" is very simple, and ranged attacks are simplified from the SRD
-def rollInitiative(inMonster, inPlayer, inMap, monPos1, monPos2, playerPos1, playerPos2):
+def rollInitiative(inMonster, inPlayer, inMap, monPos1, monPos2,
+                   playerPos1, playerPos2):
     # source for the code for printing the map:
     # https://www.tutorialspoint.com/python_data_structure/python_2darray.htm
     mp1 = int(monPos1)
     mp2 = int(monPos2)
     pp1 = int(playerPos1)
     pp2 = int(playerPos2)
-    monIc = "Ħ"
-    playerIc = "¶"
+    # colorize the icons, learned from:
+    # https://www.devdungeon.com/content/colorize-terminal-output-python
+    monIc = ('\033[35m' + 'Ħ' + '\033[0m')
+    playerIc = ('\033[36m' + '¶' + '\033[0m')
     battleMap = gridInit(7)
     battleIn = open(inMap, 'r', newline='')
     battle = csv.reader(battleIn)
@@ -345,11 +360,12 @@ def rollInitiative(inMonster, inPlayer, inMap, monPos1, monPos2, playerPos1, pla
         battleMap[mp1][mp2] = monIc
         boundReached = -1
         # print the stats:
-        print("Player HP: ", player.hp, "/ ", player.maxHp, "\nPlayer AC: ", player.ac, "\nPlayer health potions: ", player.healingPotions)
+        print("Player HP: ", player.hp, "/ ", player.maxHp, "\nPlayer AC: ",
+              player.ac, "\nPlayer health potions: ", player.healingPotions)
         # print optional stats:
         if(player.pcType == "sorcerer"):
-            print("\nCasts of Fireball remaining: ", player.fireRemaining, "\nCasts of Fear remaining: ", player.fearRemaining)
-        print("\nEnemy HP: ", monster.hp, "\nMonster AC: ", monster.ac, "\nMonster damage die/bonus: d", monster.dmgDie, "/ +", monster.dmgBonus)
+            print("\nCasts of Fireball remaining: ", player.fireRemaining,
+                  "\nCasts of Fear remaining: ", player.fearRemaining)
         print("\n---------------------------------\n")
         time.sleep(2)
         # print the battleMap with creature locations
@@ -366,10 +382,12 @@ def rollInitiative(inMonster, inPlayer, inMap, monPos1, monPos2, playerPos1, pla
         if(player.hp > 0 and monster.hp > 0 and initVictor == playerInit):
             while(tookAction == 0):
                 attacked = 0
-                print("\nYou are ", playerIc, ". The ", monster.name, " is ", monIc, ". You may move 3 spaces and take an action.\nYour actions are:\n", '\n', player.printOptions(), sep = '')
+                print("\nYou are ", playerIc, ". The ", monster.name, " is ",
+                      monIc, ". You may move 3 spaces and take an action.\
+                    \nYour actions are:\n", '\n', player.printOptions(), sep = '')
                 action = input()
 
-                if(action == "/move"):
+                if(action == "move"):
                     while(player.movement > 0):
 
                         # previous value is used to draw icon after the player
@@ -378,9 +396,11 @@ def rollInitiative(inMonster, inPlayer, inMap, monPos1, monPos2, playerPos1, pla
                         previous = (pp1, pp2)
                         validDir = 0
                         while(validDir == 0):  # input validation
-                            playerDir = input("Which direction? north, east, south, west, or stop (case sensitive)? \n")
+                            playerDir = input("Which direction? Options are: 'north', 'east', 'south', 'west', or you may stop movement by typing 'stop' \n")
                             #  exception handling
-                            if(playerDir != "north" and playerDir != "east" and playerDir != "south" and playerDir != "west" and playerDir != "stop"):
+                            if(playerDir != "north" and playerDir != "east"
+                                and playerDir != "south" and playerDir != "west"
+                                and playerDir != "stop"):
                                 print("Invalid input")
                             else:
                                 validDir = 1
@@ -420,12 +440,12 @@ def rollInitiative(inMonster, inPlayer, inMap, monPos1, monPos2, playerPos1, pla
                                 print()
                             print("---------------------------------\n")
 
-                elif(action == "/attack"):
+                elif(action == "attack"):
                     while(attacked == 0):
                         dmg = 0
                         temp = ""
                         if(player.pcType == "fighter"):
-                            temp = input("melee or ranged? ")
+                            temp = input("'melee' or 'ranged'? ")
                             if(temp == "melee"):
                                 if(adjacent(mp1, mp2, pp1, pp2) == 1):
                                     attacked = 1
@@ -433,10 +453,12 @@ def rollInitiative(inMonster, inPlayer, inMap, monPos1, monPos2, playerPos1, pla
                                     monster.setHp(monster.hp - dmg)
                                     if(dmg > 0):
                                         print("---------------------------------\n")
-                                        print("\nYou swing twice with your longsword, dealing ", dmg, " points of damage to the ", monster.name, "\n", sep = '')
+                                        print("\nYou swing twice with your longsword, dealing ",
+                                              dmg, " points of damage to the ", monster.name, "\n", sep = '')
                                     elif(dmg == 0):
                                         print("---------------------------------\n")
-                                        print("\nYou swing your longsword, but the ", monster.name, " deftly leaps clear of the blade!\n", sep = '')
+                                        print("\nYou swing your longsword, but the ",
+                                              monster.name, " deftly leaps clear of the blade!\n", sep = '')
                                 else:
                                     print("---------------------------------\n")
                                     print("\nYou need to be adjacent to the monster!\n")
@@ -446,10 +468,12 @@ def rollInitiative(inMonster, inPlayer, inMap, monPos1, monPos2, playerPos1, pla
                                 monster.setHp(monster.hp - dmg)
                                 if(dmg > 0):
                                     print("---------------------------------\n")
-                                    print("\nYou loose two arrows, striking the foul creature and dealing ", dmg, " points of damage\n", sep = '')
+                                    print("\nYou loose two arrows, striking the foul creature and dealing ",
+                                          dmg, " points of damage\n", sep = '')
                                 elif(dmg == 0):
                                     print("---------------------------------\n")
-                                    print("\nYou loose two arrows, both strike the ", monster.name, "'s armored gauntlet, destroyed on impact, dealing no damage \n", sep = '')
+                                    print("\nYou loose two arrows, both strike the ",
+                                          monster.name, "'s armored gauntlet, destroyed on impact, dealing no damage \n", sep = '')
                         # sorcerer attack is only a single melee attack
                         else:
                             if(adjacent(mp1, mp2, pp1, pp2) == 1):
@@ -458,20 +482,23 @@ def rollInitiative(inMonster, inPlayer, inMap, monPos1, monPos2, playerPos1, pla
                                 monster.setHp(monster.hp - dmg)
                                 if(dmg > 0):
                                     print("---------------------------------\n")
-                                    print("\nYou strike out with your dagger, dealing ", dmg, " points of damage to the ", monster.name, "\n", sep = '')
+                                    print("\nYou strike out with your dagger, dealing ",
+                                          dmg, " points of damage to the ",
+                                          monster.name, "\n", sep = '')
                                 elif(dmg == 0):
                                     print("---------------------------------\n")
-                                    print("\nYou swipe out with your dagger, but the ", monster.name, " deftly leaps clear of the blade!\n", sep = '')
+                                    print("\nYou swipe out with your dagger, but the ",
+                                          monster.name, " deftly leaps clear of the blade!\n", sep = '')
                             else:
                                 print("---------------------------------\n")
                                 print("\nYou need to be adjacent to the monster!\n")
                                 break
                         tookAction = 1
                 # dodge disadvantage is handled when the monster attacks
-                elif(action == "/dodge"):
+                elif(action == "dodge"):
                     print("You take the Dodge action")
                     tookAction = 1
-                elif(action == "/heal"):
+                elif(action == "heal"):
                     if(player.healingPotions == 0):
                         print("---------------------------------\n")
                         print("\nYou have no more healing potions!\n")
@@ -481,17 +508,19 @@ def rollInitiative(inMonster, inPlayer, inMap, monPos1, monPos2, playerPos1, pla
                         tookAction = 1
 
                 # spellcasting
-                elif(action == "/firebolt"):
+                elif(action == "firebolt"):
                     dmg = player.spellcast("firebolt", monster.ac)
                     monster.setHp(monster.hp - dmg)
                     if(dmg > 0):
                         print("---------------------------------\n")
-                        print("\nYou shoot a burst of flames, striking the creature and dealing ", dmg, " points of damage to the ", monster.name, "\n", sep = '')
+                        print("\nYou shoot a burst of flames, striking the creature and dealing ",
+                              dmg, " points of damage to the ", monster.name, "\n", sep = '')
                     elif(dmg == 0):
                         print("---------------------------------\n")
-                        print("\nYou shoot a gout of flames, but the ", monster.name, " deftly leaps clear of the burst!\n", sep = '')
+                        print("\nYou shoot a gout of flames, but the ",
+                              monster.name, " deftly leaps clear of the burst!\n", sep = '')
                     tookAction = 1
-                elif(action == "/fireball"):
+                elif(action == "fireball"):
                     print("---------------------------------\n")
                     dmg = player.spellcast("fireball", monster.dexBonus)
                     monster.setHp(monster.hp - dmg)
@@ -500,10 +529,11 @@ def rollInitiative(inMonster, inPlayer, inMap, monPos1, monPos2, playerPos1, pla
                         print("You have no more uses of fireball left!")
                     else:
                         print("---------------------------------\n")
-                        print("\nA huge ball of flames engulfs the monster, dealing ", dmg, " points of fire damage!\n", sep = '')
+                        print("\nA huge ball of flames engulfs the monster, dealing ",
+                              dmg, " points of fire damage!\n", sep = '')
                         tookAction = 1
 
-                elif(action == "/fear"):
+                elif(action == "fear"):
                     print("---------------------------------\n")
                     fear = player.spellcast("fear", monster.saveBonus)
                     if(fear == 0):
@@ -573,7 +603,8 @@ def rollInitiative(inMonster, inPlayer, inMap, monPos1, monPos2, playerPos1, pla
                         dmg = min(dmg, dmg2)
                     player.setHp(player.hp - dmg)
                     weap = randomWeapon()
-                    print("\n The ", monster.name, " attacks with a ", randomWeapon(), "!\nYou take ", dmg, " points of damage\n", sep = '')
+                    print("\n The ", monster.name, " attacks with a ",
+                          randomWeapon(), "!\nYou take ", dmg, " points of damage\n", sep = '')
                     print("---------------------------------\n")
                     time.sleep(2)
 
@@ -630,7 +661,7 @@ def rollInitiative(inMonster, inPlayer, inMap, monPos1, monPos2, playerPos1, pla
             print("You have died. You will never know the riches that laid in wait.\n")
             victor = 2
         playerInit = initVictor
-    time.sleep(6)
+    time.sleep(3)
     return victor
 
 
@@ -658,7 +689,8 @@ def main():
     a = 5
     b = 4
     while (winState != 1):
-        # learned from https://stackoverflow.com/questions/2084508/clear-terminal-in-python
+        # system terminal clear learned from
+        # https://stackoverflow.com/questions/2084508/clear-terminal-in-python
         os.system('clear')
         # (win state will become 1 in a specific encounter)
         # set player position values to the new values at beginning of loop
@@ -672,6 +704,7 @@ def main():
             print("\n", pos[1], "\n")
             player.healingPotions = player.healingPotions + 1
             pos[3] = 1
+            print("\n", pos[2], "\n")
         elif(pos[0] == "potion" and int(pos[3]) == 1):
             print("\n", pos[2], "\n")
 
@@ -680,6 +713,7 @@ def main():
             print("\n", pos[1], "\n")
             player.hp = player.hp + 7
             pos[3] = 1
+            print("\n", pos[2], "\n")
         elif(pos[0] == "healing" and int(pos[3]) == 1):
             print("\n", pos[2], "\n")
 
@@ -688,6 +722,7 @@ def main():
             print("\n", pos[1], "\n")
             player.dmgBonus = player.dmgBonus + 1
             pos[3] = 1
+            print("\n", pos[2], "\n")
         elif(pos[0] == "weapon" and int(pos[3]) == 1):
             print("\n", pos[2], "\n")
 
@@ -696,6 +731,7 @@ def main():
             print("\n", pos[1], "\n")
             player.setAc(player.ac + 1)
             pos[3] = 1
+            print("\n", pos[2], "\n")
         elif(pos[0] == "armor" and int(pos[3]) == 1):
             print("\n", pos[2], "\n")
 
@@ -704,6 +740,7 @@ def main():
             print("\n", pos[1], "\n")
             pos[3] = 1
             foundMagguffin = 1
+            print("\n", pos[2], "\n")
         elif(pos[0] == "key" and int(pos[3]) == 1):
             print("\n", pos[2], "\n")
 
@@ -713,6 +750,7 @@ def main():
         elif(pos[0] == "end" and foundMagguffin == 1):
             print("\n", pos[2], "\n")
             winState = 1
+            pass
 
         # A monster appears!
         if(pos[0] == "encounter" and int(pos[13]) == 0):
@@ -729,7 +767,8 @@ def main():
             print("A ", monster.name, " stands menacingly before you! Prepare for battle.", sep = '')
             time.sleep(3)  # dramatic effect
             # return the player object with updated battle damage/ updated rewards
-            var = rollInitiative(monster, player, pos[6], pos[7], pos[8], pos[9], pos[10])
+            var = rollInitiative(monster, player, pos[6], pos[7],
+                                 pos[8], pos[9], pos[10])
             if(var == 2):
                 print("Game Over")
                 time.sleep(10)
@@ -748,11 +787,11 @@ def main():
             print("---------------------------------\n")
             # print stats out to the player
             print("Player HP: ", player.hp, "\nPlayer AC: ", player.ac,
-                    "\nPlayer weapon damage: +", player.dmgBonus,
-                    "\nPlayer health potions: ", player.healingPotions, sep = '')
+                  "\nPlayer weapon damage: +", player.dmgBonus,
+                  "\nPlayer health potions: ", player.healingPotions, sep = '')
             if(player.pcType == "sorcerer"):
                 print("\nCasts of Fireball remaining: ", player.fireRemaining,
-                        "\nCasts of Fear remaining: ", player.fearRemaining)
+                      "\nCasts of Fear remaining: ", player.fearRemaining)
 
             dir = input("\nWhat would you like to do?\n\nYou can travel,\
  options are: 'north', 'east', 'south', 'west'. \nYou can heal by typing 'heal'\
@@ -807,8 +846,7 @@ def main():
         # reset this check in case the player tries going oob again.
         boundaryReached = -1
     print("You take your reward, more treasure than you know what to do with,\n \
-            make your way home, and are recieved like the legendary \
-            hero that you are!")
+make your way home, and are recieved like the legendary hero that you are!")
     return
 
 
