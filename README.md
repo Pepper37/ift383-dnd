@@ -1,6 +1,8 @@
 # ift383-dnd
 A simple python text adventure and dnd combat simulator
 
+To run the game, simply run ./dnd.py from the terminal in the same directory as the .csv files. 
+
 You are an adventurer looking to find a fabled treasure in a lost valley. 
 You are either a Sorcerer, weilding powerful magic, or a Fighter: stronger, and equipped with a bow!.
 
