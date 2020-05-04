@@ -43,6 +43,13 @@ class Creature:
         init = ((random.randint(0, 20) + self.dexBonus))
         return init
 
+    def healing(self, ins):
+        newHealth = self.hp + int(ins)
+        if(newHealth >= self.maxHp):
+            self.hp = self.maxHp
+        else:
+            self.hp = newHealth
+
 
 # Monster class inherits from Creature
 class Monster(Creature):
@@ -74,7 +81,7 @@ class Fighter(Creature):
         self.rangedDmgDie = 8
         self.rangedDmgBonus = 4
         self.healingPotions = 2
-        self.movement = 3
+        self.movement = 4
         self.dexBonus = 3
 
     # overload the attack function: fighters have two kinds of attacks
@@ -104,9 +111,10 @@ class Fighter(Creature):
             return -1
 
     # quaff a potion of healing
-    def healing(self):
+    def healthPot(self):
         # potion of healing is 1d4 + 4
-        self.hp = self.hp + random.randint(0, 4) + 4
+        self.healing(random.randint(0, 4) + 4)
+        # self.hp = self.hp + random.randint(0, 4) + 4
         self.healingPotions = self.healingPotions - 1
 
     def printOptions(self):
@@ -137,8 +145,9 @@ class Sorcerer(Creature):
         self.dexBonus = 2
 
     # quaff a potion of healing
-    def healing(self):
-        self.hp = self.hp + random.randint(0, 4) + 4
+    def healthPot(self):
+        self.healing(random.randint(0, 4) + 4)
+        # self.hp = self.hp + random.randint(0, 4) + 4
         self.healingPotions = self.healingPotions - 1
 
     # reset spell slots
@@ -376,9 +385,9 @@ def rollInitiative(inMonster, inPlayer, inMap, monPos1, monPos2,
             print()
         print("\n---------------------------------\n")
         time.sleep(2)
-        playerMove = 3
-        monsterMove = 3
+        playerMove = player.movement
 
+        # player turn
         if(player.hp > 0 and monster.hp > 0 and initVictor == playerInit):
             while(tookAction == 0):
                 attacked = 0
@@ -388,7 +397,7 @@ def rollInitiative(inMonster, inPlayer, inMap, monPos1, monPos2,
                 action = input()
 
                 if(action == "move"):
-                    while(player.movement > 0):
+                    while(playerMove > 0):
 
                         # previous value is used to draw icon after the player
                         # moves away, and to check against when the
@@ -399,8 +408,8 @@ def rollInitiative(inMonster, inPlayer, inMap, monPos1, monPos2,
                             playerDir = input("Which direction? Options are: 'north', 'east', 'south', 'west', or you may stop movement by typing 'stop' \n")
                             #  exception handling
                             if(playerDir != "north" and playerDir != "east"
-                                and playerDir != "south" and playerDir != "west"
-                                and playerDir != "stop"):
+                                    and playerDir != "south" and playerDir != "west"
+                                    and playerDir != "stop"):
                                 print("Invalid input")
                             else:
                                 validDir = 1
@@ -421,7 +430,7 @@ def rollInitiative(inMonster, inPlayer, inMap, monPos1, monPos2,
                         # allow the player to move in a cardinal direction
                         else:
                             # decrement player's remaining movement
-                            player.movement = player.movement - 1
+                            playerMove = playerMove - 1
                             # fill a bucket to store icons
                             mapBackupP2 = battleMap[pp1][pp2]
                             # move the player icon to the new location
@@ -502,8 +511,11 @@ def rollInitiative(inMonster, inPlayer, inMap, monPos1, monPos2,
                     if(player.healingPotions == 0):
                         print("---------------------------------\n")
                         print("\nYou have no more healing potions!\n")
+                    elif(player.hp == player.maxHp):
+                        print("---------------------------------\n")
+                        print("\nYou already have max hp!\n")
                     else:
-                        player.healing()
+                        player.healthPot()
                         print("You drink a healing potion")
                         tookAction = 1
 
@@ -602,9 +614,11 @@ def rollInitiative(inMonster, inPlayer, inMap, monPos1, monPos2,
                     if(action == "dodge"):
                         dmg = min(dmg, dmg2)
                     player.setHp(player.hp - dmg)
-                    weap = randomWeapon()
-                    print("\n The ", monster.name, " attacks with a ",
-                          randomWeapon(), "!\nYou take ", dmg, " points of damage\n", sep = '')
+                    if(dmg == 0):
+                        print("\nThe ", monster.name, " misses its attack!")
+                    else:
+                        print("\n The ", monster.name, " attacks with a ",
+                              randomWeapon(), "!\nYou take ", dmg, " points of damage\n", sep = '')
                     print("---------------------------------\n")
                     time.sleep(2)
 
@@ -648,12 +662,12 @@ def rollInitiative(inMonster, inPlayer, inMap, monPos1, monPos2,
                 player.setHp(player.hp - dmg)
                 if(dmg > 0):
                     print("\nThe ", monster.name, " shoots an arrow from its longbow, you take ", dmg,
-                        " points of damage as the arrow strikes a joint between you armor!\n", sep = '')
+                          " points of damage as the arrow strikes a joint between you armor!\n", sep = '')
                 elif(dmg == 0):
                     print("\nAn arrow flies at you, but you lunge forward, ducking out of the missile's way\n")
 
         # time.sleep(2)
-        player.movement = 3
+        playerMove = player.movement
         if(monster.hp <= 0):
             print("\n The ", monster.name, " has been vanquished! \n")
             victor = 1
@@ -711,7 +725,7 @@ def main():
         # rather than a healing potion, this is a straight up heal
         if(pos[0] == "healing" and int(pos[3]) == 0):
             print("\n", pos[1], "\n")
-            player.hp = player.hp + 7
+            player.healing(7)
             pos[3] = 1
             print("\n", pos[2], "\n")
         elif(pos[0] == "healing" and int(pos[3]) == 1):
@@ -786,7 +800,8 @@ def main():
         while(validDir == 0):
             print("---------------------------------\n")
             # print stats out to the player
-            print("Player HP: ", player.hp, "\nPlayer AC: ", player.ac,
+            print("Player HP: ", player.hp, "/ ", player.maxHp,
+                  "\nPlayer AC: ", player.ac,
                   "\nPlayer weapon damage: +", player.dmgBonus,
                   "\nPlayer health potions: ", player.healingPotions, sep = '')
             if(player.pcType == "sorcerer"):
@@ -803,8 +818,10 @@ def main():
                 print("---------------------------------\n")
                 if(player.healingPotions == 0):
                     print("\nYou have no more healing potions!\n")
+                elif(player.hp == player.maxHp):
+                    print("\nYou already have max health!")
                 else:
-                    player.healing()
+                    player.healthPot()
                     print("You drink a healing potion")
 
             if(dir == "rest" or dir == "'rest'"):
